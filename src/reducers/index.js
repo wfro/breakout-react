@@ -1,13 +1,16 @@
-import { combineReducers } from 'redux'
-import { routerReducer } from 'react-router-redux'
+import { combineReducers } from 'redux';
 
-function placeholder(state = {}, action) {
-  return state
+function counter(state = 0, action) {
+  switch (action.type) {
+    case 'INCREMENT_COUNTER': {
+      return state + 1;
+    }
+  }
+  return state;
 }
 
 const rootReducer = combineReducers({
-  placeholder,
-  routing: routerReducer
-})
+  counter
+});
 
-export default rootReducer
+export default rootReducer;

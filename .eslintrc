@@ -33,7 +33,7 @@
       "no-dupe-keys": 2,
       "no-else-return": 2,
       "no-empty": 2,
-      "no-empty-class": 2,
+      "no-empty-character-class": 2,
       "no-eq-null": 2,
       "no-eval": 2,
       "no-ex-assign": 2,
@@ -91,7 +91,6 @@
       "wrap-regex": 0,
 
       "react/display-name": 0,
-      "react/jsx-quotes": [2, "single", "avoid-escape"],
       "react/jsx-no-undef": 1,
       "react/jsx-uses-react": 1,
       "react/jsx-uses-vars": 1,
@@ -100,7 +99,6 @@
       "react/no-multi-comp": 2,
       "react/prop-types": 2,
       "react/react-in-jsx-scope": 1,
-      "react/self-closing-comp": 2,
-      "react/wrap-multilines": 2
+      "react/self-closing-comp": 2
     }
 }
