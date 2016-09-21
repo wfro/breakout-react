@@ -3,8 +3,24 @@
   <head>
     <meta charset="utf-8">
   </head>
+  <style>
+    canvas {
+      border: 2px solid black;
+    }
+    #root {
+      max-width: 660px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    #menu {
+      position: absolute;
+    }
+  </style>
   <body>
-    <div id='root'></div>
+    <div id='root'>
+      <div id="menu"></div>
+      <canvas id="game" width="300" height="300"></canvas>
+    </div>
     <script src="/dist/bundle.js"></script>
   </body>
 </html>
