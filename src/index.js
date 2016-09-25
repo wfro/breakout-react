@@ -1,6 +1,6 @@
 // Some serious major perf issues with this approach.
 // why are they happening? how can we stop creating so many objects?
-import { model, update } from './game';
+import { initialState, update } from './game';
 import { render } from './render';
 import { createStore } from 'redux';
 import actions from './actions';
@@ -15,11 +15,7 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
 function renderStartMenu() {
-  const menu = document.createElement('p');
-  const text = document.createTextNode('Press start.');
-  menu.appendChild(text);
-  const menuContainer = document.getElementById('menu');
-  menuContainer.appendChild(menu);
+  renderMenuText('Press spacebar to play.');
 
   window.addEventListener('keydown', startGame);
 
@@ -33,6 +29,7 @@ function renderStartMenu() {
 
     // is the inGame action necessary? do we care about that state except at the very beginning?
     //  - optional, with react you could use it to declaratively render the end screen
+    const menuContainer = document.getElementById('menu');
     menuContainer.innerHTML = '';
     start();
 
@@ -40,8 +37,24 @@ function renderStartMenu() {
   }
 }
 
+function renderGameOverSCreen() {
+  renderMenuText('Game Over.');
+}
+
+function renderWinMessage() {
+  renderMenuText('You win.');
+}
+
+function renderMenuText(text) {
+  const menu = document.createElement('p');
+  const textNode = document.createTextNode(text);
+  menu.appendChild(textNode);
+  const menuContainer = document.getElementById('menu');
+  menuContainer.appendChild(menu);
+}
+
 function start() {
-  let store = createStore(update, model);
+  let store = createStore(update, initialState);
 
   store.dispatch(actions.startGame);
 
@@ -56,9 +69,14 @@ function start() {
     //   - in menu, but not started
     //   - game over, show score screen + button to restart
     if (state.gameOver) {
-      clearInterval(intervalId);
-      ctx.clearRect(0, 0, 300, 300);
-      renderStartMenu();
+      reset();
+      renderGameOverSCreen();
+    }
+
+    // TODO: levels
+    if (state.isWon) {
+      reset();
+      renderWinMessage();
     }
   }, 1000 / 60);
 
@@ -87,6 +105,12 @@ function start() {
         }
       });
     }
+  }
+
+  function reset() {
+    clearInterval(intervalId);
+    ctx.clearRect(0, 0, 300, 300);
+    renderStartMenu();
   }
 
   // Add the start button listener here, and rely on game state to know what to do?

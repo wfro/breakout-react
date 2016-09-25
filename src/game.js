@@ -1,7 +1,9 @@
-import u from 'updeep';
+import flatten from 'lodash/flatten';
 
-// TODO: Where can i find persistent data structures?
-// TODO: how can i make sure they work?
+// TODO: Bring in immutable
+//   - define record types
+//   - use them
+// TODO: do some actual perf checks out of curiousity -- does using persistent data structues really make a big difference?
 const options = {
   projectileSize: 20,
   projectileSpeed: 2,
@@ -14,10 +16,8 @@ const options = {
 };
 const defaultOptions = options;
 
-const flatten = require('lodash/flatten');
-
-
 // this is so gnarly
+// TODO: organize our constants
 function generateBlocks() {
   const padding = 10;
   const rows = 3;
@@ -43,6 +43,7 @@ function generateBlocks() {
       if (j === 0) {
         x = padding;
       } else {
+        // Calculate a block's starting x position by using the previous block.
         const prev = row[j - 1];
         x = prev.x + w + padding;
       }
@@ -52,10 +53,11 @@ function generateBlocks() {
 
     blocks.push(row);
   }
+  return blocks;
 }
 
 // Represents all game state.
-const model = {
+const initialState = {
   boardSize: options.boardSize,
 
   blocks: flatten(generateBlocks()),
@@ -96,14 +98,20 @@ function update(state, action = {}) {
   }
 
   if (action.type === 'TICK') {
-    const updates = Object.assign({}, state, {
-      projectile: updateProjectile(state),
+    const { projectile, blocks } = updateProjectileAndBlocks(state);
+      const updates = Object.assign({}, state, {
+      projectile,
+      blocks,
       paddle: updatePaddle(state)
     });
 
     // Game ends if the projectile hits the bottom of the game field.
     if (updates.projectile.y + updates.projectile.size >= updates.boardSize) {
-      return u({ gameOver: true }, state);
+      return Object.assign({}, state, { gameOver: true });
+    }
+
+    if (updates.blocks.every(block => !block)) {
+      return Object.assign({}, state, { isWon: true });
     }
 
     // If we make it through, return the new game state!
@@ -119,38 +127,54 @@ function update(state, action = {}) {
   return state;
 }
 
-function updateProjectile(state) {
+function updateProjectileAndBlocks(state) {
   const { projectile } = state;
   const { x, y, dx, dy, size } = projectile;
 
   const updates = Object.assign({}, projectile);
 
+  // Is the projectile hitting the sides of the game field?
   if (x >= state.boardSize - size || x < 0) {
     updates.dx = -dx;
   }
 
-  // Check if the projectile is hitting the paddle
+  const nextBlocks = state.blocks.concat();
+  for (let i = 0; i < nextBlocks.length; i++) {
+    let block = nextBlocks[i];
+
+    // No need to detect collisions on a block that's been destroyed.
+    if (!block) {
+      continue;
+    }
+
+    if ((x + size > block.x) && (x < block.x + block.w) && y <= block.y + block.h) {
+      updates.dy = -dy;
+      nextBlocks[i] = null;
+      // break; // TODO: can only one block be removed in a single frame? If not, don't break the loop once a block is destroyed
+    }
+  }
+
+  // Blocks and projectile are coupled -- what is the best way to update them?
+  //   - General issue is with two distinct 'entities', you'd like to keep them
+  //     as separate as possible to keep things neat and tidy, but they both ask
+  //     the same questions around game state. Is it ok to ask them twice? Or should
+  //     the work to update the projectile/blocks live in the same place?
+
   const inBetweenPaddles = ((x + size > state.paddle.x) &&
                             (x < state.paddle.x + state.paddle.w));
   const isHittingPaddle = ((y + size) >= (state.boardSize - state.paddle.h));
-
-  // Check if the projectile is hitting a block
-  state.blocks.some(block => {
-    // do we need to check each individual side?
-    // could we just
-    // only one x range to check
-    // only one y range to check
-  });
-
   if (inBetweenPaddles && isHittingPaddle || y < 0) {
     updates.dy = -dy;
   }
 
+  // After updating the x/y velocity, move the projectile forward.
   updates.x = projectile.x + updates.dx;
   updates.y = projectile.y + updates.dy;
 
-  // return u(updates, state);
-  return Object.assign({}, state, updates);
+  return {
+    projectile: Object.assign({}, state,projectile, updates),
+    blocks: nextBlocks
+  };
 }
 
 function updatePaddle(state) {
@@ -184,7 +208,7 @@ function updatePaddle(state) {
 }
 
 export {
-  model,
+  initialState,
   update,
   defaultOptions
 };
