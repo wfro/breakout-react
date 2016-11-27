@@ -1,9 +1,5 @@
 import flatten from 'lodash/flatten';
 
-// TODO: Bring in immutable
-//   - define record types
-//   - use them
-// TODO: do some actual perf checks out of curiousity -- does using persistent data structues really make a big difference?
 const options = {
   projectileSize: 20,
   projectileSpeed: 2,
@@ -16,8 +12,6 @@ const options = {
 };
 const defaultOptions = options;
 
-// this is so gnarly
-// TODO: organize our constants
 function generateBlocks() {
   const padding = 10;
   const rows = 3;
@@ -56,7 +50,6 @@ function generateBlocks() {
   return blocks;
 }
 
-// Represents all game state.
 const initialState = {
   boardSize: options.boardSize,
 
@@ -153,12 +146,6 @@ function updateProjectileAndBlocks(state) {
       // break; // TODO: can only one block be removed in a single frame? If not, don't break the loop once a block is destroyed
     }
   }
-
-  // Blocks and projectile are coupled -- what is the best way to update them?
-  //   - General issue is with two distinct 'entities', you'd like to keep them
-  //     as separate as possible to keep things neat and tidy, but they both ask
-  //     the same questions around game state. Is it ok to ask them twice? Or should
-  //     the work to update the projectile/blocks live in the same place?
 
   const inBetweenPaddles = ((x + size > state.paddle.x) &&
                             (x < state.paddle.x + state.paddle.w));

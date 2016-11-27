@@ -1,5 +1,3 @@
-// Some serious major perf issues with this approach.
-// why are they happening? how can we stop creating so many objects?
 import { initialState, update } from './game';
 import { render } from './render';
 import { createStore } from 'redux';
@@ -24,11 +22,6 @@ function renderStartMenu() {
       return;
     }
 
-    // Keep in mind, you're starting to get away from pure declarative (maybe it doesn't matter)
-    // But some game state now (inGame) only matters at the very beginning
-
-    // is the inGame action necessary? do we care about that state except at the very beginning?
-    //  - optional, with react you could use it to declaratively render the end screen
     const menuContainer = document.getElementById('menu');
     menuContainer.innerHTML = '';
     start();
@@ -65,9 +58,6 @@ function start() {
 
     render(ctx, state);
 
-    // TODO: other game states to account for:
-    //   - in menu, but not started
-    //   - game over, show score screen + button to restart
     if (state.gameOver) {
       reset();
       renderGameOverSCreen();
@@ -83,8 +73,6 @@ function start() {
   window.addEventListener('keyup', handleKeys.bind(this, false));
   window.addEventListener('keydown', handleKeys.bind(this, true));
 
-  // We didn't *have* to store the key state in the store (we could pass it in i guess), but it's nice
-  // to have everything in one place (is it? That's the real question methinks)
   function handleKeys(value, e) {
     if (e.keyCode === KEYS.left) {
       store.dispatch({
@@ -112,15 +100,6 @@ function start() {
     ctx.clearRect(0, 0, 300, 300);
     renderStartMenu();
   }
-
-  // Add the start button listener here, and rely on game state to know what to do?
-  // This makes ense as part of main game loop because...
-  //   - we hve to render te pause menu continuously?  that's the hold point of canvas right?
-  // window.addEventListener('keydown')
-  // if state.isPaused
-  //   dispatch to unpause?
-  // if state.isInStartMenu
-  //   render the start menu
 }
 
 renderStartMenu();
